@@ -32,7 +32,7 @@ class Automat():
         self.arr = list()
         self.peak = None
         self.conditions = None
-        self.res_of_S = []  # двумерный массив где каждый вложенный массив соответствует множеству вершины с эпсилон-переходами соответствующей вершины
+        self.res_of_S = []  # двумерный массив где каждый вложенный массив соответствует вершине и состоянию которое туда входит из .name
         self.Tab_of_S = []  # 
 
         self.add_automat()
@@ -59,7 +59,7 @@ class Automat():
             self.arr.append(QSP(name, path))
         print("self.arr: ", self.arr)
 
-    #Работает только с проверкой 1 путя
+    #Работает только с проверкой 1 пути
     #возвращает массив с вершинами учитывая эпсилон-переходы
     def forward(self, elem: QSP):
         elem_res = []
@@ -75,17 +75,19 @@ class Automat():
             self.res_of_S.append(self.forward(peak))
 
 
-    def forward1(self, elem: str, condition: str, flag):
-        elem_res = []                       # Можно сделать содержимое классом QSP чтобы удобно хранить и состояние и путь. !!! НЕ РЕАЛИЗОВАННО !!!
-        for path in elem.get_path() :
-            if path[1] == 'e':
-                elem_res.append(path[0])    #Засовывает имя пути если туда идет епсилон.
+    def forward1(self, elem: QSP, condition: str, flag):
+        elem_res = []
+        for path in elem.get_path():
             if path[1] == condition:
-                flag = False                #Меняем флаг на False т.к. нужное состояние можно встретить только 1 раз.
-                elem_res.append(path[0])    #Засовывает имя пути если туда идет нужное состояние.
-            if flag == False:
-                return elem_res             #Если flag == False значит мы прошли все возможные эпсилоны и нужное состояние.
-        return elem_res                     #Возвращаем пустой список если никакое условие не сработало
+                flag = False
+                elem_res.append(path[0])
+            if path[1] == 'e':
+                elem_res.append(path[0])
+
+        if flag:  # если нужное состояние не найдено и мы прошли все пути, рекурсивно вызываем forward1 для первого пути в списке
+            return self.forward1(QSP(elem.get_path()[0][0], self.arr[self.peak.index(elem.get_path()[0][0])].get_path()), condition, flag=True)
+        return elem_res
+
     
     def make_tab(self):
         for peak in self.arr:
