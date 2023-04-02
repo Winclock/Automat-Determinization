@@ -9,10 +9,22 @@ class QSP():
         return f"{self.name}_"
     
     def get_path(self):
-        return self.path
+        return list(self.path)
     
     def get_name(self):
-        return self.name
+        return str(self.name)
+    
+    def check_epsilon(self):
+        for i in self.path:
+            if i[1] == "e":
+                return self.path.index(i)
+            else:
+                return None
+            
+    # не реальзована ситуация с несколькими эпсилон-переходами
+    def delete_path(self, index):
+        self.path.remove(self.path[index])
+
 
 
 class Automat():
@@ -20,53 +32,40 @@ class Automat():
         self.arr = list()
         self.peak = None
         self.conditions = None
+        self.res_of_S = []  # двумерный массив где каждый вложенный массив соответствует множеству вершины с эпсилон-переходами соответствующей вершины
 
         self.add_automat()
-        self.fill_automat()
-#        self.arr = [[0 for j in range(self.conditions)] for i in range(self.indexes)]
-        self.check_ALL_epsilon()
+        self.fill_arr()
+        self.make_set_with_S()
+        print(self.res_of_S)
  
     def add_automat(self):
         self.conditions = input("введите состояния автомата >> ").split()
+        print("Введенные состояния : ", self.conditions)
         self.peak = input("Введите вершины >> ").split()
+        print("Введенные вершины : ", self.peak)
 
-        print(self.conditions)
-
-    def fill_automat(self):
+    def fill_arr(self):
         for name in self.peak:
             path = list()
             inp_pathh = input(f"Введите пути из {name} >> ").split(" ")
             for i in inp_pathh:
                 path.append(i.split(","))
             self.arr.append(QSP(name, path))
-        print("VSE VERSHINI S PUTYAMI", self.arr)
+        print("self.arr: ", self.arr)
 
+    #Работает только с проверкой 1 путя
+    #возвращает массив с вершинами учитывая эпсилон-переходы
+    def forward(self, elem: QSP):
+        elem_res = []
+        elem_res.append(elem.get_name())  # Засовывает изначальную вершину
+        for path in elem.get_path():
+            if path[1] == 'e':
+                elem_res.append(str(path[0]))    #Засовывает имя пути куда идет епсилон
+        return elem_res
 
-    def check(self, conv:QSP, condition, flag):
-        res = []
-        for inconv in conv.path:
-            print(" func: check , var: inconv ", inconv)
-            if (inconv[1] == condition and flag) or inconv[1] == 'e':
-                res.append(inconv[0])
-                #self.recheck(res,condition)
-        return res
-            
-
-    def check_epsilon(self, condition: str, flag:bool):
-        peak_to_add = list()
-        for conv in self.arr:
-            # добавляем вершину и соответствующие ей результаты проверки эпсилон-переходов
-            peak_to_add.append([conv.get_name(), self.check(conv, condition,True)])
-        return("Хорошие вершины", peak_to_add)
-
-    def check_ALL_epsilon(self):
-        for condit in self.conditions:
-            print(f"для condit {condit} ", self.check_epsilon(condit, True))
-
-    def make_Stab():
-        pass
-
-    def make_Ptab():
-        pass
+    def make_set_with_S(self):
+        for peak in self.arr:
+            self.res_of_S.append(self.forward(peak))
 
 a1 = Automat()
